@@ -32,3 +32,26 @@ Since BLE devices do not send a "disconnected" signal when leaving the area, a t
     {{ now() - states.sensor.shelly_blu_button1_263a_signalstyrka.last_updated > timedelta(minutes=5) }}
     ```
   * *Action:* Turns the helper "Off" (The alarm is activated).
+
+---
+
+## Phase 2: Perimeter Security (Matter over Thread)
+In the second phase, the system was expanded with local door and window sensors. To maintain a strict local-only environment without relying on third-party commercial hubs, a custom Thread Border Router was built from scratch to support modern Matter devices.
+
+### Hardware Added
+* **Thread Border Router:** Sonoff ZBDongle-E (Zigbee 3.0 USB Dongle Plus V2)
+* **Door/Window Sensor:** IKEA MYGGBETT (Matter over Thread)
+
+### Software & Configuration
+1. **Firmware Flashing:**
+   * The Sonoff ZBDongle-E was flashed from its factory Zigbee firmware to **OpenThread RCP** (v2.4.4) using the official Sonoff Web Flasher.
+2. **OpenThread Border Router (OTBR):**
+   * Installed the OTBR add-on in Home Assistant.
+   * Configured the device serial path (`/dev/serial/by-id/...`), set the baud rate to `460800`, and disabled hardware flow control.
+   * Manually exposed the internal REST API port (`8081`) in the add-on network settings to allow communication with the Home Assistant core.
+3. **Thread & Matter Integration:**
+   * Connected the native Home Assistant Thread integration to the local OTBR using the API URL: `http://localhost:8081`.
+   * Installed and started the Matter Server add-on.
+   * Synced the local Thread network credentials to the Android mobile device via the Home Assistant Companion App. This critical step ensures the smartphone can securely pass the network keys to new Matter devices during pairing.
+4. **Device Pairing:**
+   * The IKEA MYGGBETT sensor was factory-reset and paired directly into Home Assistant via the Matter integration, providing instantaneous, local status updates (Open/Closed) for the alarm logic.
